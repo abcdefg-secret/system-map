@@ -2614,7 +2614,7 @@ function getPortXY(node, pos) {
 // ── Arrow path builder — curved, straight, orthogonal ──
 // Returns { d, lx, ly } where lx/ly is the label midpoint.
 // ox/oy are optional offsets applied to all coords (used by export to subtract minX/minY).
-function buildArrowPath(p1, p2, fromPos, toPos, bend, lineStyle, ox, oy) {
+function buildArrowPath(p1, p2, fromPos, toPos, bend, lineStyle, ox, oy, orthoOffset) {
   ox = ox || 0; oy = oy || 0;
   const x1 = p1.x - ox, y1 = p1.y - oy;
   const x2 = p2.x - ox, y2 = p2.y - oy;
@@ -2631,37 +2631,48 @@ function buildArrowPath(p1, p2, fromPos, toPos, bend, lineStyle, ox, oy) {
   }
 
   if (style === 'orthogonal') {
-    // Build an L/Z-shaped path that exits perpendicular to each port.
-    // orthoOffset (-1..1) shifts the position of the middle crossbar.
+    // Orthogonal Z-path with two independently adjustable axes.
+    // bend (pixels) = primary axis: X offset for horizontal exits, Y offset for vertical.
+    // orthoOffset (pixels) = secondary axis: Y offset for horizontal exits, X for vertical.
+    // Both are raw pixel offsets so canvas drag is always 1:1 with mouse movement.
     const fo  = offs[fromPos || 'e'] || {x:1, y:0};
     const to2 = offs[toPos   || 'w'] || {x:-1, y:0};
     const stub = 28;
     const ex1 = x1 + fo.x * stub,  ey1 = y1 + fo.y * stub;
     const ex2 = x2 + to2.x * stub, ey2 = y2 + to2.y * stub;
+    const bendPx  = bend || 0;
+    const orthoPx = orthoOffset || 0;
 
-    // orthoOffset shifts the crossbar: 0 = midpoint, -1 = near source, +1 = near target
-    const oo = (bend || 0) / 120; // reuse bend storage, map -120..120 → -1..1
-
-    let mx1, my1, mx2, my2;
     if (fo.x !== 0) {
-      // horizontal exit — crossbar is vertical, shift it left/right
-      const midX = (ex1 + ex2) / 2 + oo * (ex2 - ex1) / 2;
-      mx1 = midX; my1 = ey1;
-      mx2 = midX; my2 = ey2;
+      // Horizontal exits (e/w): Z goes right→down→right (or left→up→left)
+      // midX = position of the left vertical column  (bend = X offset from centre)
+      // sy   = shared Y level of the horizontal crossbar (orthoOffset = Y offset from centre)
+      const midX = (ex1 + ex2) / 2 + bendPx;
+      const sy   = (ey1 + ey2) / 2 + orthoPx;
+      const d = `M${x1},${y1} L${ex1},${ey1} L${midX},${ey1} L${midX},${sy} L${ex2},${sy} L${ex2},${ey2} L${x2},${y2}`;
+      return {
+        d,
+        lx: (midX + ex2) / 2, ly: sy,
+        cx1: ex1, cy1: ey1, cx2: ex2, cy2: ey2,
+        // Handle positions for canvas dragging
+        hX: { x: midX,           y: (ey1 + sy) / 2, axis: 'x', seg: 'vertical'   }, // on vert col — drag L/R
+        hY: { x: (midX+ex2) / 2, y: sy,              axis: 'y', seg: 'horizontal' }, // on horiz bar — drag U/D
+      };
     } else {
-      // vertical exit — crossbar is horizontal, shift it up/down
-      const midY = (ey1 + ey2) / 2 + oo * (ey2 - ey1) / 2;
-      mx1 = ex1; my1 = midY;
-      mx2 = ex2; my2 = midY;
+      // Vertical exits (n/s): Z goes down→right→down (or up→left→up)
+      // midY = position of the horizontal crossbar (bend = Y offset from centre)
+      // sx   = shared X column of the right vertical (orthoOffset = X offset from centre)
+      const midY = (ey1 + ey2) / 2 + bendPx;
+      const sx   = (ex1 + ex2) / 2 + orthoPx;
+      const d = `M${x1},${y1} L${ex1},${ey1} L${ex1},${midY} L${sx},${midY} L${sx},${ey2} L${ex2},${ey2} L${x2},${y2}`;
+      return {
+        d,
+        lx: sx, ly: (midY + ey2) / 2,
+        cx1: ex1, cy1: ey1, cx2: ex2, cy2: ey2,
+        hX: { x: (ex1+sx) / 2, y: midY,              axis: 'y', seg: 'horizontal' }, // on horiz bar — a.bend=midY → drag U/D
+        hY: { x: sx,            y: (midY + ey2) / 2, axis: 'x', seg: 'vertical'   }, // on vert col  — a.orthoY=sx → drag L/R
+      };
     }
-
-    const d = `M${x1},${y1} L${ex1},${ey1} L${mx1},${my1} L${mx2},${my2} L${ex2},${ey2} L${x2},${y2}`;
-    return {
-      d,
-      lx: (mx1 + mx2) / 2,
-      ly: (my1 + my2) / 2,
-      cx1: ex1, cy1: ey1, cx2: ex2, cy2: ey2
-    };
   }
 
   // Default: curved bezier
@@ -2776,8 +2787,8 @@ function renderArrows() {
     const mBwd = makeArrowMarker('mb-' + uid, true);   // marker-start
 
     // Build path (curved / straight / orthogonal)
-    const { d, lx: _lx, ly: _ly, cx1, cy1, cx2, cy2 } =
-      buildArrowPath(p1, p2, a.fromPos || 'e', a.toPos || 'w', a.bend || 0, a.lineStyle || 'curved');
+    const _pathResult = buildArrowPath(p1, p2, a.fromPos || 'e', a.toPos || 'w', a.bend || 0, a.lineStyle || 'curved', 0, 0, a.orthoY || 0);
+    const { d, lx: _lx, ly: _ly, cx1, cy1, cx2, cy2 } = _pathResult;
 
     // Wide invisible hit area — must use a real (non-transparent) stroke colour
     // because SVG pointer events don't fire on stroke="transparent" in most browsers.
@@ -2811,6 +2822,7 @@ function renderArrows() {
       path.setAttribute('marker-start', `url(#mb-${uid})`);
     }
     arrowSVG.appendChild(path);
+
 
     // Label
     if (a.label) {
@@ -2888,6 +2900,84 @@ function renderArrows() {
       bg.addEventListener('dblclick', onDbl);
       txt.addEventListener('dblclick', onDbl);
     }
+
+    // Orthogonal handles — two pills, one per axis, only when selected
+    if (isSelected && (a.lineStyle || 'curved') === 'orthogonal' && _pathResult.hX) {
+      const handles = [
+        { info: _pathResult.hX, prop: 'bend',   color: 'var(--accent3)' },
+        { info: _pathResult.hY, prop: 'orthoY',  color: 'var(--accent2)' },
+      ];
+
+      handles.forEach(({ info, prop, color }) => {
+        // seg = which line segment it sits on ('vertical' or 'horizontal')
+        // axis = which direction to drag ('x' = left/right, 'y' = up/down)
+        const isVertSeg = info.seg === 'vertical';
+        const isXDrag   = info.axis === 'x';
+        // Pill shape: tall (portrait) for vertical segments, wide (landscape) for horizontal
+        const hw = isVertSeg ? 14 : 28;
+        const hh = isVertSeg ? 28 : 14;
+
+        const pill = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        pill.setAttribute('x', info.x - hw/2);
+        pill.setAttribute('y', info.y - hh/2);
+        pill.setAttribute('width', hw);
+        pill.setAttribute('height', hh);
+        pill.setAttribute('rx', '7');
+        pill.setAttribute('fill', color);
+        pill.setAttribute('opacity', '0.85');
+        pill.style.cursor = isXDrag ? 'ew-resize' : 'ns-resize';
+        pill.style.pointerEvents = 'all';
+
+        // Grip lines — perpendicular to the pill's long axis
+        const grip = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        grip.style.pointerEvents = 'none';
+        [-4, 0, 4].forEach(off => {
+          const gl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          if (isVertSeg) {
+            // Tall pill — horizontal grips
+            gl.setAttribute('x1', info.x - 4); gl.setAttribute('y1', info.y + off);
+            gl.setAttribute('x2', info.x + 4); gl.setAttribute('y2', info.y + off);
+          } else {
+            // Wide pill — vertical grips
+            gl.setAttribute('x1', info.x + off); gl.setAttribute('y1', info.y - 4);
+            gl.setAttribute('x2', info.x + off); gl.setAttribute('y2', info.y + 4);
+          }
+          gl.setAttribute('stroke', 'var(--bg)');
+          gl.setAttribute('stroke-width', '1.5');
+          gl.setAttribute('stroke-linecap', 'round');
+          grip.appendChild(gl);
+        });
+
+        arrowSVG.appendChild(pill);
+        arrowSVG.appendChild(grip);
+
+        // Drag — raw pixels, 1:1 with mouse movement
+        let dragging = false, startPos = 0, startVal = 0;
+        pill.addEventListener('mousedown', e2 => {
+          e2.stopPropagation();
+          dragging = true;
+          startPos = isXDrag ? e2.clientX : e2.clientY;
+          startVal = a[prop] || 0;
+          pushUndo();
+          selectArrow(a.id);
+        });
+        window.addEventListener('mousemove', e2 => {
+          if (!dragging) return;
+          const delta = (isXDrag ? (e2.clientX - startPos) : (e2.clientY - startPos)) / scale;
+          a[prop] = startVal + delta;
+          renderArrows();
+          // Sync sidebar sliders
+          const slA = document.getElementById('ortho-slider-bend');
+          const slB = document.getElementById('ortho-slider-orthoY');
+          if (slA) slA.value = Math.round(a.bend || 0);
+          if (slB) slB.value = Math.round(a.orthoY || 0);
+        });
+        window.addEventListener('mouseup', () => {
+          if (dragging) { dragging = false; saveToLocalStorage(); }
+        });
+      });
+    }
+
   });
 }
 
@@ -3088,9 +3178,10 @@ function renderPropsPanel() {
             br.style.display = s.v === 'straight' ? 'none' : '';
             const lbl = br.querySelector('.prop-label');
             if (lbl) lbl.textContent = s.v === 'orthogonal' ? 'Crossbar position' : 'Curve / bend';
-            // Reset slider to 0 when switching styles
+            // Reset offsets when switching styles
+            a.bend = 0; a.orthoY = 0;
             const sl = br.querySelector('input[type=range]');
-            if (sl) { sl.value = 0; a.bend = 0; }
+            if (sl) sl.value = 0;
           }
           renderArrows(); saveToLocalStorage();
         });
@@ -3124,19 +3215,40 @@ function renderPropsPanel() {
     addPropRow(body, 'To port (target)', () => makePortSelect(a, 'toPos', () => renderArrows()));
 
     // Bend
-    const bendRow = document.createElement('div');
-    bendRow.className = 'prop-row bend-row';
     const _isOrth = a.lineStyle === 'orthogonal';
     const _isStraight = a.lineStyle === 'straight';
-    bendRow.style.display = _isStraight ? 'none' : '';
-    const bendLbl = document.createElement('div'); bendLbl.className='prop-label';
-    bendLbl.textContent = _isOrth ? 'Crossbar position' : 'Curve / bend';
-    bendRow.appendChild(bendLbl);
-    const bendInp = document.createElement('input'); bendInp.type='range'; bendInp.className='prop-input';
-    bendInp.min=-120; bendInp.max=120; bendInp.value=a.bend||0;
-    bendInp.addEventListener('input', () => { pushUndoDebounced(); a.bend = parseInt(bendInp.value); renderArrows(); });
-    bendRow.appendChild(bendInp);
-    body.appendChild(bendRow);
+
+    // For curved: bend slider. For orthogonal: two offset sliders. For straight: nothing.
+    if (!_isStraight && !_isOrth) {
+      const bendRow = document.createElement('div');
+      bendRow.className = 'prop-row bend-row';
+      const bendLbl = document.createElement('div'); bendLbl.className='prop-label'; bendLbl.textContent='Curve / bend';
+      bendRow.appendChild(bendLbl);
+      const bendInp = document.createElement('input'); bendInp.type='range'; bendInp.className='prop-input';
+      bendInp.min=-120; bendInp.max=120; bendInp.value=a.bend||0;
+      bendInp.addEventListener('input', () => { pushUndoDebounced(); a.bend = parseInt(bendInp.value); renderArrows(); });
+      bendRow.appendChild(bendInp);
+      body.appendChild(bendRow);
+    }
+    if (_isOrth) {
+      // Two sliders — one per axis. Labels depend on from-port direction.
+      const fromP = a.fromPos || 'e';
+      const isHorizExit = (fromP === 'e' || fromP === 'w');
+      const labelA = isHorizExit ? 'Column X position' : 'Crossbar Y position';
+      const labelB = isHorizExit ? 'Crossbar Y position' : 'Column X position';
+
+      [[labelA, 'bend', 'ortho-slider-bend'], [labelB, 'orthoY', 'ortho-slider-orthoY']].forEach(([lbl, prop, sid]) => {
+        const row = document.createElement('div');
+        row.className = 'prop-row';
+        const rl = document.createElement('div'); rl.className = 'prop-label'; rl.textContent = lbl;
+        row.appendChild(rl);
+        const sl = document.createElement('input'); sl.type = 'range'; sl.className = 'prop-input';
+        sl.id = sid; sl.min = -300; sl.max = 300; sl.value = Math.round(a[prop] || 0);
+        sl.addEventListener('input', () => { pushUndoDebounced(); a[prop] = parseInt(sl.value); renderArrows(); saveToLocalStorage(); });
+        row.appendChild(sl);
+        body.appendChild(row);
+      });
+    }
 
     // Dash
     const dashRow = document.createElement('div');
@@ -3202,7 +3314,10 @@ function renderPropsPanel() {
     resetPosBtn.textContent = '↺ Reset position'; resetPosBtn.title = 'Reset label to midpoint';
     resetPosBtn.style.cssText = 'padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:10px;margin-left:auto;';
     resetPosBtn.addEventListener('click', () => {
-      pushUndo(); a.labelOffsetX = 0; a.labelOffsetY = 0;
+      pushUndo();
+      a.labelOffsetX = 0; a.labelOffsetY = 0;
+      // Also reset orthogonal layout offsets if applicable
+      if ((a.lineStyle || 'curved') === 'orthogonal') { a.bend = 0; a.orthoY = 0; }
       renderArrows(); saveToLocalStorage();
     });
 
@@ -4113,7 +4228,7 @@ function buildExportHTML(opts) {
     if(!fn||!tn) return;
     const p1=getPortXYE(fn,a.fromPos||'e'), p2=getPortXYE(tn,a.toPos||'w');
     const {d:d2, lx:_elx, ly:_ely, cx1, cy1, cx2, cy2} =
-      buildArrowPath(p1, p2, a.fromPos||'e', a.toPos||'w', a.bend||0, a.lineStyle||'curved', minX, minY);
+      buildArrowPath(p1, p2, a.fromPos||'e', a.toPos||'w', a.bend||0, a.lineStyle||'curved', minX, minY, a.orthoY||0);
     const color=a.color||'#4f8ef7';
     let mEnd='', mStart='';
     if(a.direction==='directed'){mEnd='marker-end="url(#af)"';}
