@@ -3,33 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Interface Map Builder</title>
+<title>Conduit</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0d0f14;
-    --surface: #13161d;
-    --surface2: #1a1e28;
-    --surface3: #222736;
-    --border: #2a2f3e;
-    --border2: #353c50;
-    --accent: #4f8ef7;
+    --bg: #0b0d11;
+    --surface: #111318;
+    --surface2: #171b24;
+    --surface3: #1e2330;
+    --border: #232838;
+    --border2: #2e3448;
+    --accent: #4d7ef5;
     --accent2: #7c5cfc;
-    --accent3: #00d4aa;
+    --accent3: #00c49a;
     --warn: #e8883a;
-    --danger: #f75f5f;
-    --text: #e8eaf0;
-    --text2: #9aa0b8;
-    --text3: #5c6380;
-    --node-internal: #1a2340;
-    --node-internal-border: #4f8ef7;
-    --node-external: #231a2a;
-    --node-external-border: #7c5cfc;
-    --arrow-color: #4f8ef7;
-    --label-bg: #0d0f14cc;
+    --danger: #e85555;
+    --text: #eceef4;
+    --text2: #8b93ae;
+    --text3: #4e566e;
+    --node-internal: #141c30;
+    --node-internal-border: #2d4a8a;
+    --node-external: #1c1428;
+    --node-external-border: #5a3f9a;
+    --arrow-color: #4d7ef5;
+    --label-bg: #0b0d11cc;
     --shadow: 0 2px 12px #00000060, 0 8px 32px #00000040;
     --radius: 6px;
   }
@@ -62,13 +62,13 @@
   }
   #topbar .logo {
     font-family: 'Inter', sans-serif;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text);
-    letter-spacing: -0.01em;
-    margin-right: 18px;
+    letter-spacing: -0.03em;
+    margin-right: 22px;
     white-space: nowrap;
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 8px;
   }
 
   #topbar .logo span { color: var(--text3); font-weight: 400; }
@@ -358,6 +358,14 @@
     background: var(--accent3); flex-shrink: 0; opacity: 0.6;
   }
   .node.external .node-fn-item::before { background: var(--accent2); }
+  /* IO pills on canvas nodes */
+  .node-io-wrap { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; margin-bottom: 1px; }
+  .node-io-pill {
+    padding: 1px 6px; border-radius: 10px; font-size: 8.5px;
+    font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.02em;
+  }
+  .node-io-pill.input  { background: #0d1f2d; border: 1px solid #2a4a6a; color: #5fa8d3; }
+  .node-io-pill.output { background: #0d2018; border: 1px solid #2a5a3a; color: #5fd38a; }
   /* Sidebar functions editor */
   .fn-editor-list { margin-bottom: 6px; }
   .fn-editor-row {
@@ -575,7 +583,7 @@
     flex-shrink: 0;
   }
   .legend-line.solid { background: var(--accent); }
-  .legend-line.dashed { background: none; border-top: 2px dashed var(--accent2); }
+  .legend-line.dashed { background: none; height: 0; border-top: 2px dashed var(--accent2); margin-top: 1px; }
   .legend-box {
     width: 20px; height: 14px; border-radius: 3px; flex-shrink: 0;
   }
@@ -1029,6 +1037,7 @@
   }
   .io-tag.input-tag  { background: #0d1f2d; border-color: #2a4a6a; color: #5fa8d3; }
   .io-tag.output-tag { background: #0d2018; border-color: #2a5a3a; color: #5fd38a; }
+  .io-tag.io-tag-hidden { opacity: 0.45; text-decoration: line-through; }
   .io-tag .io-tag-remove {
     width: 14px; height: 14px; border-radius: 50%;
     background: rgba(255,255,255,0.08); border: none; cursor: pointer;
@@ -1655,7 +1664,7 @@
     background: var(--surface);
     border: 1px solid var(--border2);
     border-radius: 12px;
-    width: 860px; max-width: 96vw; max-height: 90vh;
+    width: 860px; max-width: 96vw; height: 90vh; max-height: 90vh;
     display: flex; flex-direction: column;
     box-shadow: 0 32px 80px #00000095;
     animation: slideUp 0.18s cubic-bezier(0.16,1,0.3,1);
@@ -1860,13 +1869,13 @@
 <!-- TOP BAR -->
 <div id="topbar">
   <div class="logo">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+    <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
       <rect x="1" y="6" width="5" height="8" rx="1.5" fill="#4d7ef5" opacity="0.9"/>
       <rect x="14" y="6" width="5" height="8" rx="1.5" fill="#4d7ef5" opacity="0.5"/>
       <path d="M6 10 L9 10 L9 13 L11 13 L11 10 L14 10" stroke="#4d7ef5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
       <circle cx="10" cy="13" r="1.2" fill="#00c49a"/>
     </svg>
-    SIM<span>/</span>Builder
+    Conduit
   </div>
   <div class="tb-sep"></div>
   <input id="diagram-title-input" type="text" value="SYSTEM INTERFACE MAP" placeholder="Diagram title…">
@@ -1985,8 +1994,8 @@
           <div class="legend-row"><div class="legend-box internal"></div> Internal system</div>
           <div class="legend-row"><div class="legend-box external"></div> External boundary</div>
           <div class="legend-row"><div class="legend-box boundary"></div> Label / boundary</div>
-          <div class="legend-row"><div class="legend-line solid"></div> Data flow</div>
-          <div class="legend-row"><div class="legend-line dashed"></div> Bidirectional</div>
+          <div class="legend-row"><div class="legend-line solid"></div> Connection</div>
+          <div class="legend-row"><svg width="30" height="4" style="flex-shrink:0"><line x1="0" y1="2" x2="30" y2="2" stroke="var(--accent2)" stroke-width="2" stroke-dasharray="4 3"/></svg> Dashed connection</div>
           <div class="legend-row">
             <div style="width:10px;height:10px;border-radius:50%;background:transparent;border:1px solid var(--accent3);display:flex;align-items:center;justify-content:center;font-size:7px;font-style:italic;font-weight:600;color:var(--accent3);flex-shrink:0;font-family:Georgia,serif;opacity:0.75;">i</div>
             Contains documentation
@@ -2059,9 +2068,13 @@
 <div id="statusbar">
   <span id="sb-nodes">⬡ 0 nodes</span>
   <span id="sb-arrows">→ 0 arrows</span>
+  <span id="sb-functions">⚙ 0 functions</span>
+  <span id="sb-io">⇅ 0 I/O</span>
   <span id="sb-zoom">⊕ 100%</span>
   <span id="sb-mode" style="color:var(--accent3)"></span>
-  <span id="sb-autosave" style="margin-left:auto;color:var(--accent3);font-size:9px;font-family:'IBM Plex Mono',monospace;opacity:0;transition:opacity 0.5s;letter-spacing:0.04em;">✓ saved</span>
+  <span style="margin-left:auto;color:var(--text3);font-size:9px;font-family:'IBM Plex Mono',monospace;opacity:0.5;">v1.0</span>
+  <span style="color:var(--text3);font-size:9px;font-family:'IBM Plex Mono',monospace;opacity:0.4;">· Created by Luke Darragh</span>
+  <span id="sb-autosave" style="color:var(--accent3);font-size:9px;font-family:'IBM Plex Mono',monospace;opacity:0;transition:opacity 0.5s;letter-spacing:0.04em;">✓ saved</span>
 </div>
 
 <!-- MODAL -->
@@ -2294,19 +2307,7 @@
     <div id="export-modal-body">
       <div id="export-options-pane">
         <div class="export-opt-group">
-          <div class="export-opt-label">Node content</div>
-          <div class="export-opt-row" onclick="toggleExportOpt('showFunctions')">
-            <span class="export-opt-name">Show functions</span>
-            <button class="export-toggle on" id="opt-showFunctions"></button>
-          </div>
-          <div class="export-opt-row" onclick="toggleExportOpt('showIO')">
-            <span class="export-opt-name">Show inputs / outputs</span>
-            <button class="export-toggle on" id="opt-showIO"></button>
-          </div>
-          <div class="export-opt-row" onclick="toggleExportOpt('showSubtitle')">
-            <span class="export-opt-name">Show subtitle</span>
-            <button class="export-toggle on" id="opt-showSubtitle"></button>
-          </div>
+          <div class="export-opt-label" style="font-style:italic;opacity:0.7;letter-spacing:0;">Node content reflects the canvas — adjust visibility in the editor</div>
         </div>
         <div class="export-opt-group">
           <div class="export-opt-label">Document</div>
@@ -2376,15 +2377,6 @@
 <div id="palette-drag-ghost"></div>
 <script>
 // ══════════════════════════════════════════════
-// UTILITIES
-// ══════════════════════════════════════════════
-// Safe function-name extractor. Functions were historically stored as plain strings;
-// they are now always objects. This handles both forms so callers never crash.
-function _fnName(f) {
-  return typeof f === 'string' ? f : (f && f.name ? f.name : '');
-}
-
-// ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
 let state = {
@@ -2395,6 +2387,8 @@ let scale = 1;
 let panX = 0, panY = 0;
 let selectedNode = null;
 let selectedArrow = null;
+let connectMode = false;
+let connectFrom = null; // {nodeId, pos}
 let nextArrowType = 'directed';
 let draggingNode = null;
 let dragOffset = {x:0, y:0};
@@ -2402,6 +2396,7 @@ let panDragging = false;
 let panStart = {x:0, y:0};
 let resizingNode = null;
 let resizeStart = {};
+let tempLine = null; // SVG line for preview
 
 const canvas = document.getElementById('canvas');
 const canvasWrap = document.getElementById('canvas-wrap');
@@ -2468,6 +2463,7 @@ function renderNodes() {
     const el = createNodeEl(n);
     canvas.appendChild(el);
   });
+  saveToLocalStorage();
 }
 
 function createNodeEl(n) {
@@ -2515,11 +2511,33 @@ function createNodeEl(n) {
       n.functions.forEach(fn => {
         const name = typeof fn === 'string' ? fn : (fn.name || '');
         if (!name.trim()) return;
-        if (fn.hidden) return; // hidden from diagram
+        if (fn.hidden) return;
         const item = document.createElement('div');
         item.className = 'node-fn-item';
         item.textContent = name;
         fnsWrap.appendChild(item);
+        // Visible IO pills
+        const hidIn  = fn.hiddenInputs  || [];
+        const hidOut = fn.hiddenOutputs || [];
+        const visIns  = (Array.isArray(fn.inputs)  ? fn.inputs  : (fn.inputs  ? [fn.inputs]  : [])).filter((_,i) => !hidIn.includes(i));
+        const visOuts = (Array.isArray(fn.outputs) ? fn.outputs : (fn.outputs ? [fn.outputs] : [])).filter((_,i) => !hidOut.includes(i));
+        if (visIns.length || visOuts.length) {
+          const pillWrap = document.createElement('div');
+          pillWrap.className = 'node-io-wrap';
+          visIns.forEach(v => {
+            const p = document.createElement('span');
+            p.className = 'node-io-pill input';
+            p.textContent = '↓ ' + v;
+            pillWrap.appendChild(p);
+          });
+          visOuts.forEach(v => {
+            const p = document.createElement('span');
+            p.className = 'node-io-pill output';
+            p.textContent = '↑ ' + v;
+            pillWrap.appendChild(p);
+          });
+          fnsWrap.appendChild(pillWrap);
+        }
       });
       inner.appendChild(fnsWrap);
     }
@@ -2540,8 +2558,8 @@ function createNodeEl(n) {
   }
   div.appendChild(inner);
 
-  // Resize handle — all node types
-  {
+  // Resize handle
+  if (n.type !== 'boundary' || true) {
     const rh = document.createElement('div');
     rh.className = 'node-resize';
     rh.addEventListener('mousedown', e => startResize(e, n.id));
@@ -2881,8 +2899,6 @@ function renderArrows() {
       let dragging = false, ldx, ldy;
       bg.style.cursor = txt.style.cursor = 'move';
       bg.style.pointerEvents = txt.style.pointerEvents = 'all';
-      const labelAC = new AbortController();
-      const labelSig = { signal: labelAC.signal };
       const onDown = e2 => {
         if (e2.detail === 2) return; // dblclick handled separately
         e2.stopPropagation(); dragging = true;
@@ -2898,10 +2914,8 @@ function renderArrows() {
         a.labelOffsetY = (a.labelOffsetY||0) + (e2.clientY - ldy) / scale;
         ldx = e2.clientX; ldy = e2.clientY;
         renderArrows();
-      }, labelSig);
-      window.addEventListener('mouseup', () => {
-        if (dragging) { dragging = false; saveToLocalStorage(); labelAC.abort(); }
-      }, labelSig);
+      });
+      window.addEventListener('mouseup', () => { if (dragging) { dragging = false; saveToLocalStorage(); } });
 
       // Double-click label to inline edit
       const onDbl = e2 => {
@@ -2965,8 +2979,6 @@ function renderArrows() {
 
         // Drag — raw pixels, 1:1 with mouse movement
         let dragging = false, startPos = 0, startVal = 0;
-        const handleAC = new AbortController();
-        const handleSig = { signal: handleAC.signal };
         pill.addEventListener('mousedown', e2 => {
           e2.stopPropagation();
           dragging = true;
@@ -2999,10 +3011,10 @@ function renderArrows() {
           const slB = document.getElementById('ortho-slider-orthoY');
           if (slA) slA.value = Math.round(a.bend || 0);
           if (slB) slB.value = Math.round(a.orthoY || 0);
-        }, handleSig);
+        });
         window.addEventListener('mouseup', () => {
-          if (dragging) { dragging = false; saveToLocalStorage(); handleAC.abort(); }
-        }, handleSig);
+          if (dragging) { dragging = false; saveToLocalStorage(); }
+        });
       });
     }
 
@@ -3129,31 +3141,59 @@ function renderPropsPanel() {
       fnHeader.appendChild(fnCountBadge);
       fnSection.appendChild(fnHeader);
 
-      // Chip list preview
-      const chipList = document.createElement('div');
-      chipList.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;min-height:22px;';
-      const validFns = n.functions.filter(f => (f.name||'').trim() && !f.hidden);
-      const hiddenCount = n.functions.filter(f => f.hidden).length;
-      if (validFns.length === 0) {
+      // Per-function rows with visibility toggle + click-to-edit
+      const fnList = document.createElement('div');
+      fnList.style.cssText = 'display:flex;flex-direction:column;gap:2px;margin-bottom:8px;';
+      const namedFns = n.functions.filter(f => (f.name||'').trim());
+      if (namedFns.length === 0) {
         const empty = document.createElement('div');
         empty.style.cssText = 'font-size:11px;color:var(--text3);font-style:italic;padding:2px 0;';
         empty.textContent = 'No functions defined yet';
-        chipList.appendChild(empty);
+        fnList.appendChild(empty);
       } else {
-        validFns.slice(0, 5).forEach(f => {
-          const chip = document.createElement('div');
-          chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text2);max-width:100%;overflow:hidden;';
-          chip.innerHTML = '<span style="width:5px;height:5px;border-radius:50%;background:var(--accent3);opacity:0.8;flex-shrink:0;display:inline-block;"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (f.name||'').slice(0,28) + '</span>';
-          chipList.appendChild(chip);
+        namedFns.forEach((f, idx) => {
+          // Find real index in n.functions (namedFns may skip empty entries)
+          const realIdx = n.functions.indexOf(f);
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:border-color 0.12s;' + (f.hidden ? 'opacity:0.45;' : '');
+          row.title = 'Click to edit in function editor';
+          // Eye toggle
+          const eyeBtn = document.createElement('button');
+          eyeBtn.style.cssText = 'flex-shrink:0;display:inline-flex;align-items:center;background:none;border:none;cursor:pointer;padding:0;color:var(--text3);opacity:' + (f.hidden ? '0.4' : '0.75') + ';transition:opacity 0.12s;';
+          eyeBtn.title = f.hidden ? 'Show on canvas' : 'Hide from canvas';
+          eyeBtn.innerHTML = f.hidden ? '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><ellipse cx="6" cy="6" rx="5" ry="3.2" stroke="currentColor" stroke-width="1.2" opacity="0.5"/><line x1="2" y1="2" x2="10" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' : '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><ellipse cx="6" cy="6" rx="5" ry="3.2" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg>';
+          eyeBtn.addEventListener('click', e2 => {
+            e2.stopPropagation();
+            pushUndo();
+            f.hidden = !f.hidden;
+            renderNodes();
+            requestAnimationFrame(() => renderArrows());
+            renderSidebar();
+            updateStatusBar();
+            saveToLocalStorage();
+          });
+          // Name
+          const nameSpan = document.createElement('span');
+          nameSpan.style.cssText = 'flex:1;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+          nameSpan.textContent = (f.name||'').slice(0, 32);
+          // Edit arrow
+          const editArrow = document.createElement('span');
+          editArrow.style.cssText = 'flex-shrink:0;font-size:10px;color:var(--text3);opacity:0.5;';
+          editArrow.textContent = '›';
+          row.appendChild(eyeBtn);
+          row.appendChild(nameSpan);
+          row.appendChild(editArrow);
+          row.addEventListener('mouseenter', () => { row.style.borderColor = 'var(--border2)'; editArrow.style.opacity = '1'; });
+          row.addEventListener('mouseleave', () => { row.style.borderColor = 'var(--border)'; editArrow.style.opacity = '0.5'; });
+          row.addEventListener('click', () => {
+            openFnModal(n.id);
+            // Select the specific function after modal opens
+            setTimeout(() => selectFn(realIdx), 60);
+          });
+          fnList.appendChild(row);
         });
-        if (validFns.length > 5) {
-          const more = document.createElement('div');
-          more.style.cssText = 'padding:2px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text3);';
-          more.textContent = '+' + (validFns.length - 5) + ' more';
-          chipList.appendChild(more);
-        }
       }
-      fnSection.appendChild(chipList);
+      fnSection.appendChild(fnList);
 
       // Edit button
       const editFnBtn = document.createElement('button');
@@ -3461,7 +3501,7 @@ function deselect(e) {
   if (e && (e.target !== canvas && !e.target.closest('#canvas-wrap') || e.target.closest('.node') || e.target.closest('.arrow-path'))) return;
   selectedNode = null;
   selectedArrow = null;
-  document.querySelectorAll('.node').forEach(el => { el.classList.remove('selected'); el.classList.remove('arrow-endpoint'); });
+  document.querySelectorAll('.node').forEach(e => { e.classList.remove('selected'); e.classList.remove('arrow-endpoint'); });
   document.querySelectorAll('.conn-point.arrow-endpoint-port').forEach(cp => cp.classList.remove('arrow-endpoint-port'));
   arrowSVG.style.zIndex = '2'; // restore below nodes
   renderArrows();
@@ -3806,6 +3846,11 @@ function getBestPos(fromId, toId) {
   return {fromPos, toPos};
 }
 
+// Legacy shim — no longer used but kept for safety
+function toggleConnectMode() {}
+function finishConnect(toNodeId, toPos) { completeWire(); }
+connectMode = false;
+
 // ── Add node ──
 let lastNodeType = 'internal'; // tracks most recently added type for dblclick
 
@@ -3814,6 +3859,7 @@ function updatePaletteHighlight() {
     btn.classList.toggle('active', btn.dataset.nodetype === lastNodeType);
   });
 }
+
 
 // Generate a sequential display tag for new nodes.
 // Counts all existing non-boundary nodes so internal and external
@@ -3824,42 +3870,40 @@ function _nextNodeTag(type) {
   const num = String(seq).padStart(2, '0');
   return type === 'external' ? 'EXT-' + num : 'SYS-' + num;
 }
-
-// Shared default node factory — single source of truth for node shape
-function _makeDefaultNode(type, x, y) {
-  const w = type === 'boundary' ? 300 : 180;
-  const h = type === 'boundary' ? 200 : 100;
-  return {
-    id: 'n' + (nodeIdCounter++),
-    type, tag: _nextNodeTag(type),
-    title: type === 'boundary' ? 'Boundary label' : type === 'external' ? 'External Entity' : 'New System',
-    subtitle: '',
-    x, y, w, h,
-    color: '', textColor: '', functions: []
-  };
-}
-
 function addMode(type) {
   pushUndo();
   lastNodeType = type;
   updatePaletteHighlight();
+  const id = 'n'+(nodeIdCounter++);
   const cx = (-panX + canvasWrap.clientWidth/2) / scale - 100;
   const cy = (-panY + canvasWrap.clientHeight/2) / scale - 50;
-  state.nodes.push(_makeDefaultNode(type, cx, cy));
+  state.nodes.push({
+    id, type, tag: _nextNodeTag(type),
+    title: type==='boundary'?'Boundary label':type==='external'?'External Entity':'New System',
+    subtitle: '',
+    x: cx, y: cy, w: type==='boundary'?300:180, h: type==='boundary'?200:100,
+    color:'', textColor:'', functions:[]
+  });
   render();
-  selectNode(state.nodes[state.nodes.length - 1].id);
+  selectNode(id);
 }
 
 function addModeAt(type, canvasX, canvasY) {
   pushUndo();
   lastNodeType = type;
   updatePaletteHighlight();
-  const w = type === 'boundary' ? 300 : 180, h = type === 'boundary' ? 200 : 100;
+  const id = 'n'+(nodeIdCounter++);
+  const w = type==='boundary'?300:180, h = type==='boundary'?200:100;
   const x = Math.round((canvasX - w/2) / 10) * 10;
   const y = Math.round((canvasY - h/2) / 10) * 10;
-  state.nodes.push(_makeDefaultNode(type, x, y));
+  state.nodes.push({
+    id, type, tag: _nextNodeTag(type),
+    title: type==='boundary'?'Boundary label':type==='external'?'External Entity':'New System',
+    subtitle: '',
+    x, y, w, h, color:'', textColor:'', functions:[]
+  });
   render();
-  selectNode(state.nodes[state.nodes.length - 1].id);
+  selectNode(id);
 }
 
 // ══════════════════════════════════════════════
@@ -3937,6 +3981,13 @@ function deleteSelected() {
 // MOUSE EVENTS
 // ══════════════════════════════════════════════
 canvasWrap.addEventListener('mousedown', e => {
+  if (e.button === 1) {
+    // Middle mouse — pan from anywhere on the canvas, no deselect
+    e.preventDefault();
+    panDragging = true;
+    panStart = {x: e.clientX - panX, y: e.clientY - panY};
+    return;
+  }
   if (wireActive) return; // handled by window mouseup
   if (e.target === canvasWrap || e.target.id==='canvas' || e.target===arrowSVG) {
     deselect(e);
@@ -3997,13 +4048,24 @@ window.addEventListener('mousemove', e => {
     let snapPortPos = null;
     let bestPortDist = Infinity;
 
-    // Helper: actual rendered port position — uses module-level getPortXYActual()
-    // which accounts for DOM offsetHeight (n.h is min-height only).
+    // Helper: get actual rendered port position using DOM offsetHeight for accuracy.
+    // n.h is min-height only — content can make nodes taller, shifting the S port.
+    function getActualPortXY(n, pos) {
+      const el = document.getElementById('node-' + n.id);
+      const actualH = el ? el.offsetHeight : n.h;
+      switch(pos) {
+        case 'n': return { x: n.x + n.w / 2, y: n.y };
+        case 's': return { x: n.x + n.w / 2, y: n.y + actualH };
+        case 'e': return { x: n.x + n.w,     y: n.y + actualH / 2 };
+        case 'w': return { x: n.x,            y: n.y + actualH / 2 };
+        default:  return { x: n.x + n.w / 2, y: n.y + actualH / 2 };
+      }
+    }
 
     state.nodes.forEach(n => {
       if (n.id === wireSrcId) return;
       ['n','s','e','w'].forEach(pos => {
-        const p = getPortXYActual(n, pos);
+        const p = getActualPortXY(n, pos);
         const d = Math.sqrt((mx - p.x)**2 + (my - p.y)**2);
         if (d < PORT_SNAP && d < bestPortDist) {
           bestPortDist = d;
@@ -4128,8 +4190,18 @@ function setArrowType(t) {
 }
 
 function updateStatusBar() {
-  document.getElementById('sb-nodes').textContent = `⬡ ${state.nodes.filter(n=>n.type!=='boundary').length} nodes`;
-  document.getElementById('sb-arrows').textContent = `→ ${state.arrows.length} arrows`;
+  const nonBoundary = state.nodes.filter(n => n.type !== 'boundary');
+  document.getElementById('sb-nodes').textContent = `⬡ ${nonBoundary.length} nodes`;
+  document.getElementById('sb-arrows').textContent = `→ ${state.arrows.length} connections`;
+  const allFns = nonBoundary.flatMap(n => (n.functions||[]).filter(f => (f.name||'').trim() && !f.hidden));
+  document.getElementById('sb-functions').textContent = `⚙ ${allFns.length} functions`;
+  const totalIO = allFns.reduce((sum, f) => {
+    const ins  = Array.isArray(f.inputs)  ? f.inputs  : (f.inputs  ? [f.inputs]  : []);
+    const outs = Array.isArray(f.outputs) ? f.outputs : (f.outputs ? [f.outputs] : []);
+    return sum + ins.filter((_,i) => !(f.hiddenInputs||[]).includes(i)).length
+               + outs.filter((_,i) => !(f.hiddenOutputs||[]).includes(i)).length;
+  }, 0);
+  document.getElementById('sb-io').textContent = `⇅ ${totalIO} I/O`;
 }
 
 // ══════════════════════════════════════════════
@@ -4145,7 +4217,7 @@ function exportJSON() {
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'system-map.json';
+  a.download = 'conduit-diagram.json';
   a.click();
 }
 
@@ -4187,6 +4259,18 @@ function buildExportHTML(opts) {
   const subtitle = document.getElementById('diagram-subtitle-input').value;
   const stateJson = JSON.stringify(state);
 
+  // Capture live CSS variable values so the export is pixel-perfect
+  const cs = getComputedStyle(document.documentElement);
+  const cssVars = [
+    '--bg','--surface','--surface2','--surface3',
+    '--border','--border2',
+    '--accent','--accent2','--accent3',
+    '--text','--text2','--text3',
+    '--node-internal','--node-internal-border',
+    '--node-external','--node-external-border',
+    '--shadow','--radius'
+  ].map(v => v + ':' + cs.getPropertyValue(v).trim()).join(';');
+
   // Build static SVG arrows and nodes for the export
   const nodes = state.nodes;
   const arrows = state.arrows;
@@ -4196,27 +4280,25 @@ function buildExportHTML(opts) {
   // Instead we estimate from the node's stored data + opts, then add a generous pad.
   function estimateExportHeight(n) {
     if (n.type === 'boundary') return n.h;
-    let h = 14 + 4; // inner padding top
-    if (n.tag)      h += 16; // tag line
-    h += 20;        // title (can be multi-line but use single as base)
+    let h = 14 + 4;
+    if (n.tag)      h += 16;
+    h += 20;
     if (n.title && n.title.includes('\n')) h += 16 * (n.title.split('\n').length - 1);
-    if (opts.showSubtitle && n.subtitle) h += 18;
-    if (opts.showFunctions) {
-      const fns = (n.functions||[]).filter(f => _fnName(f).trim() && !f.hidden);
-      if (fns.length) {
-        h += 14 + 8; // section header + border
-        fns.forEach(f => {
-          h += 22; // function name row
-          if (opts.showIO) {
-            const ins  = Array.isArray(f.inputs)  ? f.inputs  : (f.inputs  ? [f.inputs]  : []);
-            const outs = Array.isArray(f.outputs) ? f.outputs : (f.outputs ? [f.outputs] : []);
-            if (ins.length)  h += 20;
-            if (outs.length) h += 20;
-          }
-        });
-      }
+    if (n.subtitle) h += 18;
+    const fns = (n.functions||[]).filter(f => (f.name||f||'').trim() && !f.hidden);
+    if (fns.length) {
+      h += 14 + 8;
+      fns.forEach(f => {
+        h += 22;
+        const hidIn  = f.hiddenInputs  || [];
+        const hidOut = f.hiddenOutputs || [];
+        const ins  = (Array.isArray(f.inputs)  ? f.inputs  : (f.inputs  ? [f.inputs]  : [])).filter((_,i) => !hidIn.includes(i));
+        const outs = (Array.isArray(f.outputs) ? f.outputs : (f.outputs ? [f.outputs] : [])).filter((_,i) => !hidOut.includes(i));
+        if (ins.length)  h += 22;
+        if (outs.length) h += 22;
+      });
     }
-    h += 14; // inner padding bottom
+    h += 14;
     return Math.max(n.h, h);
   }
 
@@ -4235,6 +4317,7 @@ function buildExportHTML(opts) {
   const W = maxX-minX, H = maxY-minY;
 
   // Build SVG
+  function bezierPtE(p0,p1,p2,p3,t){const mt=1-t;return mt*mt*mt*p0+3*mt*mt*t*p1+3*mt*t*t*p2+t*t*t*p3;}
   function getPortXYE(n, pos) {
     const h = estimatedHeights[n.id] || n.h;
     switch(pos){
@@ -4245,24 +4328,57 @@ function buildExportHTML(opts) {
       default: return{x:n.x+n.w/2,y:n.y+h/2};}
   }
 
-  let svgArrows = `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none;" width="${W}" height="${H}">
-<defs>
-  <marker id="af" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-    <path d="M0,0 L0,6 L8,3 z" fill="#4f8ef7"/></marker>
-  <marker id="ab" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse">
-    <path d="M0,0 L0,6 L8,3 z" fill="#4f8ef7"/></marker>
-</defs>`;
+  let svgArrows = `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none;" width="${W}" height="${H}"><defs id="edefs"></defs>`;
+
+  // Port stagger — mirrors canvas renderArrows logic exactly
+  const ePortGroups = {};
+  arrows.forEach(a => {
+    const fk = a.from + ':' + (a.fromPos||'e');
+    const tk = a.to   + ':' + (a.toPos  ||'w');
+    if (!ePortGroups[fk]) ePortGroups[fk] = [];
+    if (!ePortGroups[tk]) ePortGroups[tk] = [];
+    ePortGroups[fk].push(a.id);
+    ePortGroups[tk].push(a.id);
+  });
+  const ePortPerp = { n:{x:1,y:0}, s:{x:1,y:0}, e:{x:0,y:1}, w:{x:0,y:1} };
+  const E_STAGGER = 8;
+  function staggeredPortXYE(node, pos, arrowId) {
+    const base = getPortXYE(node, pos);
+    const key  = node.id + ':' + pos;
+    const group = ePortGroups[key] || [];
+    if (group.length <= 1) return base;
+    const idx    = group.indexOf(arrowId);
+    const total  = group.length;
+    const offset = (idx - (total - 1) / 2) * E_STAGGER;
+    const perp   = ePortPerp[pos] || {x:1,y:0};
+    return { x: base.x + perp.x * offset, y: base.y + perp.y * offset };
+  }
+
+  // Build per-arrow marker defs string
+  let eDefsHtml = '';
+  function makeExportMarker(id, color, forStart) {
+    return `<marker id="${id}" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="${forStart?'auto-start-reverse':'auto'}"><path d="M0,0 L0,6 L8,3 z" fill="${color}"/></marker>`;
+  }
 
   arrows.forEach(a => {
     const fn = nodes.find(x=>x.id===a.from), tn = nodes.find(x=>x.id===a.to);
     if(!fn||!tn) return;
-    const p1=getPortXYE(fn,a.fromPos||'e'), p2=getPortXYE(tn,a.toPos||'w');
+    const color=a.color||'#4d7ef5';
+    eDefsHtml += makeExportMarker('emf-'+a.id, color, false);
+    eDefsHtml += makeExportMarker('emb-'+a.id, color, true);
+  });
+  svgArrows = svgArrows.replace('<defs id="edefs"></defs>', `<defs>${eDefsHtml}</defs>`);
+
+  arrows.forEach(a => {
+    const fn = nodes.find(x=>x.id===a.from), tn = nodes.find(x=>x.id===a.to);
+    if(!fn||!tn) return;
+    const p1=staggeredPortXYE(fn,a.fromPos||'e',a.id), p2=staggeredPortXYE(tn,a.toPos||'w',a.id);
     const {d:d2, lx:_elx, ly:_ely, cx1, cy1, cx2, cy2} =
       buildArrowPath(p1, p2, a.fromPos||'e', a.toPos||'w', a.bend||0, a.lineStyle||'curved', minX, minY, a.orthoY||0);
-    const color=a.color||'#4f8ef7';
+    const color=a.color||'#4d7ef5';
     let mEnd='', mStart='';
-    if(a.direction==='directed'){mEnd='marker-end="url(#af)"';}
-    else if(a.direction==='bidirectional'){mEnd='marker-end="url(#af)"'; mStart='marker-start="url(#ab)"';}
+    if(a.direction==='directed'){mEnd=`marker-end="url(#emf-${a.id})"`;}
+    else if(a.direction==='bidirectional'){mEnd=`marker-end="url(#emf-${a.id})"`;mStart=`marker-start="url(#emb-${a.id})"`;}
     const dash=a.dash?'stroke-dasharray="6 3"':'';
     svgArrows+=`<path d="${d2}" fill="none" stroke="${color}" stroke-width="1.5" ${mEnd} ${mStart} ${dash}/>`;
     if(a.label){
@@ -4287,7 +4403,7 @@ function buildExportHTML(opts) {
   const nodeDetailData = {};
   nodes.filter(n => n.type !== 'boundary').forEach(n => {
     const fns = (n.functions||[]).filter(f => {
-      const nm = _fnName(f); return nm.trim() && !f.hidden;
+      const nm = f.name||f||''; return nm.trim() && !f.hidden;
     });
     const hasFnDetail = fns.some(f => f.description||(f.inputs&&f.inputs.length)||(f.outputs&&f.outputs.length));
     const hasNotes    = n.notes && n.notes.trim();
@@ -4314,22 +4430,46 @@ function buildExportHTML(opts) {
   let nodeHtml = '';
   const sortedN = [...nodes].sort((a,b)=>(a.type==='boundary'?-1:1)-(b.type==='boundary'?-1:1));
   sortedN.forEach(n => {
-    const bc     = n.type==='boundary'?'transparent':(n.color?n.color+'33':(n.type==='internal'?'#1a2340':'#231a2a'));
-    const bStyle = n.type==='boundary'?'1.5px dashed #353c50':(n.type==='internal'?'1.5px solid #4f8ef7':'1.5px dashed #7c5cfc');
     const hasDetail = !!nodeDetailData[n.id];
-    // Detail trigger button (ⓘ) — only shown if node has notes or function detail
-    const detailBtn = (!n.type || n.type==='boundary') ? '' :
-      (hasDetail ? `<button onclick="openDetail('${n.id}')" style="position:absolute;top:7px;right:7px;width:16px;height:16px;border-radius:50%;background:transparent;border:1px solid #00d4aa90;color:#00d4aa;font-size:9px;font-style:italic;font-family:Georgia,serif;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0.75;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.75">i</button>` : '');
-    const innerHtml = n.type==='boundary'
-      ? `<div style="padding:10px 14px;">${n.title?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#5c6380;">${n.title}</div>`:''} ${n.subtitle?`<div style="font-family:'IBM Plex Sans',sans-serif;font-size:10px;color:#5c6380;margin-top:2px;opacity:0.8;">${n.subtitle}</div>`:''}</div>`
-      : `<div style="padding:14px 16px;padding-right:${hasDetail?'26px':'16px'};">
-          ${n.tag?`<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#5c6380;margin-bottom:4px;">${n.tag}</div>`:''}
-          <div style="font-size:13px;font-weight:600;color:${n.textColor||'#e8eaf0'};margin-bottom:2px;white-space:pre-line;line-height:1.3;">${n.title}</div>
-          ${(opts.showSubtitle&&n.subtitle)?`<div style="font-size:11px;color:#9aa0b8;white-space:pre-line;line-height:1.4;">${n.subtitle}</div>`:''}
-          ${(()=>{ if(!opts.showFunctions) return ''; const fns2=(n.functions||[]).filter(f=>_fnName(f).trim()&&!f.hidden);if(!fns2.length)return'';const items=fns2.map(f=>{const name=_fnName(f);const inpArr=opts.showIO?(Array.isArray(f.inputs)?f.inputs:(f.inputs?[f.inputs]:[])):[];const outArr=opts.showIO?(Array.isArray(f.outputs)?f.outputs:(f.outputs?[f.outputs]:[])):[];const inpHtml=inpArr.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;">${inpArr.map(v=>`<span style="padding:1px 6px;border-radius:10px;font-size:9px;background:#0d1f2d;border:1px solid #2a4a6a;color:#5fa8d3;">↓ ${v}</span>`).join('')}</div>`:'';const outHtml=outArr.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px;">${outArr.map(v=>`<span style="padding:1px 6px;border-radius:10px;font-size:9px;background:#0d2018;border:1px solid #2a5a3a;color:#5fd38a;">↑ ${v}</span>`).join('')}</div>`:'';return`<div style="padding:4px 0 4px 9px;border-left:2px solid #00d4aa30;margin-bottom:4px;"><div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:#9aa0b8;"><span style="width:4px;height:4px;border-radius:50%;background:#00d4aa;opacity:0.7;flex-shrink:0;display:inline-block;margin-left:-7px;"></span>${name}</div>${inpHtml}${outHtml}</div>`;}).join('');return`<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.07);padding-top:7px;"><div style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#5c6380;margin-bottom:6px;">Functions</div>${items}</div>`;})()}
-        </div>${detailBtn}`;
-    // Use n.h as min-height so the box auto-expands to fit whatever content opts includes
-    nodeHtml += `<div style="position:absolute;left:${n.x-minX}px;top:${n.y-minY}px;width:${n.w}px;min-height:${n.h}px;background:${bc};border:${bStyle};border-radius:8px;box-sizing:border-box;">${innerHtml}</div>`;
+    const colorStyle = n.color ? `background:${n.color}33;` : '';
+    const detailBtn = hasDetail && n.type !== 'boundary'
+      ? `<button class="detail-btn" onclick="openDetail('${n.id}')">i</button>`
+      : '';
+
+    let innerHtml = '';
+    if (n.type === 'boundary') {
+      innerHtml = `<div class="node-inner">`
+        + (n.title ? `<div class="node-title">${n.title}</div>` : '')
+        + (n.subtitle ? `<div class="node-boundary-sub">${n.subtitle}</div>` : '')
+        + `</div>`;
+    } else {
+      // Always render exactly what the canvas shows — visibility controlled in editor
+      const fnItems = (() => {
+        const fns2 = (n.functions||[]).filter(f => (f.name||f||'').trim() && !f.hidden);
+        if (!fns2.length) return '';
+        const items = fns2.map(f => {
+          const name = typeof f === 'string' ? f : (f.name || '');
+          const hidIn  = f.hiddenInputs  || [];
+          const hidOut = f.hiddenOutputs || [];
+          const ins  = (Array.isArray(f.inputs)  ? f.inputs  : (f.inputs  ? [f.inputs]  : [])).filter((_,i) => !hidIn.includes(i));
+          const outs = (Array.isArray(f.outputs) ? f.outputs : (f.outputs ? [f.outputs] : [])).filter((_,i) => !hidOut.includes(i));
+          let ioHtml = '';
+          if (ins.length)  ioHtml += `<div class="node-io-wrap">${ins.map(v=>`<span class="node-io-pill input">↓ ${v}</span>`).join('')}</div>`;
+          if (outs.length) ioHtml += `<div class="node-io-wrap">${outs.map(v=>`<span class="node-io-pill output">↑ ${v}</span>`).join('')}</div>`;
+          return `<div class="node-fn-item">${name}</div>${ioHtml}`;
+        }).join('');
+        return `<div class="node-functions"><div class="node-functions-label">Functions</div>${items}</div>`;
+      })();
+      const titleColor = n.textColor ? `style="color:${n.textColor};"` : '';
+      innerHtml = `<div class="node-inner" style="padding-right:${hasDetail?'26px':'14px'};">`
+        + (n.tag ? `<div class="node-tag">${n.tag}</div>` : '')
+        + `<div class="node-title" ${titleColor}>${n.title}</div>`
+        + (n.subtitle ? `<div class="node-subtitle">${n.subtitle}</div>` : '')
+        + fnItems
+        + `</div>`;
+    }
+
+    nodeHtml += `<div class="node ${n.type}" style="position:absolute;left:${n.x-minX}px;top:${n.y-minY}px;width:${n.w}px;min-height:${n.h}px;${colorStyle}">${innerHtml}${detailBtn}</div>`;
   });
 
   const html = `<!DOCTYPE html>
@@ -4338,21 +4478,61 @@ function buildExportHTML(opts) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0d0f14;font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 20px;}
-.wrap{max-width:1100px;width:100%;}
-.header{margin-bottom:32px;}
-.header h1{font-size:22px;font-weight:600;color:#e8eaf0;letter-spacing:0.04em;}
-.header p{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5c6380;margin-top:4px;}
-.diagram{position:relative;width:${W}px;height:${H}px;margin:0 auto;}
-.grid-bg{position:fixed;inset:0;background-image:linear-gradient(#2a2f3e40 1px,transparent 1px),linear-gradient(90deg,#2a2f3e40 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
-.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:28px;padding:16px 20px;background:#13161d;border:1px solid #2a2f3e;border-radius:8px;}
-.legend-item{display:flex;align-items:center;gap:8px;font-size:11px;color:#9aa0b8;}
-.legend-box{width:20px;height:14px;border-radius:3px;}
-.legend-line{width:28px;height:2px;}
-footer{margin-top:32px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#353c50;}
+html,body{height:100%;overflow:hidden;}
+:root{${cssVars}}
+body{background:var(--bg);font-family:'Inter',sans-serif;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+/* ── Header bar ── */
+#export-header{flex-shrink:0;height:44px;padding:0 14px;background:#0d0f15;border-bottom:1px solid #1a1e2a;display:flex;align-items:center;gap:12px;z-index:10;box-shadow:0 1px 0 #00000040;}
+#export-header h1{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-0.02em;}
+#export-header p{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-left:4px;}
+/* ── Canvas viewport ── */
+#viewport{flex:1;overflow:hidden;position:relative;cursor:grab;}
+#viewport.panning{cursor:grabbing;}
+#canvas-root{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform;}
+.diagram{position:relative;width:${W}px;height:${H}px;}
+/* ── Grid ── */
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:0.22;pointer-events:none;z-index:0;}
+/* ── Nodes — exact replica of builder CSS ── */
+.node{position:absolute;border-radius:var(--radius);cursor:default;min-width:120px;}
+.node.internal{background:var(--node-internal);border:1px solid #1e2d50;border-left:3px solid var(--node-internal-border);box-shadow:var(--shadow);}
+.node.external{background:var(--node-external);border:1px solid #2a1e3e;border-left:3px dashed var(--node-external-border);box-shadow:var(--shadow);}
+.node.boundary{background:transparent;border:1px dashed #272d40;box-shadow:none;}
+.node-inner{padding:12px 14px;}
+.node.boundary .node-inner{padding:10px 14px;}
+.node-tag{font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;}
+.node-title{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.35;letter-spacing:-0.02em;white-space:pre-line;}
+.node.boundary .node-title{font-size:11px;color:var(--text3);font-weight:600;font-family:'IBM Plex Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;white-space:pre-line;}
+.node-subtitle{font-family:'Inter',sans-serif;font-size:10px;color:var(--text2);line-height:1.45;font-weight:400;white-space:pre-line;}
+.node-boundary-sub{font-size:10px;color:var(--text3);font-weight:400;font-family:'IBM Plex Sans',sans-serif;margin-top:2px;opacity:0.8;}
+.node-functions{margin-top:8px;border-top:1px solid rgba(255,255,255,0.06);padding-top:7px;}
+.node-functions-label{font-family:'IBM Plex Mono',monospace;font-size:7.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;opacity:0.7;}
+.node-fn-item{display:flex;align-items:center;gap:6px;padding:1.5px 0;font-family:'Inter',sans-serif;font-size:10px;color:var(--text2);line-height:1.4;}
+.node-fn-item::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--accent3);flex-shrink:0;opacity:0.6;}
+.node.external .node-fn-item::before{background:var(--accent2);}
+.node-io-wrap{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;margin-bottom:1px;}
+.node-io-pill{padding:1px 6px;border-radius:10px;font-size:8.5px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.02em;}
+.node-io-pill.input{background:#0d1f2d;border:1px solid #2a4a6a;color:#5fa8d3;}
+.node-io-pill.output{background:#0d2018;border:1px solid #2a5a3a;color:#5fd38a;}
+/* ── Detail trigger button ── */
+.detail-btn{position:absolute;top:7px;right:7px;width:16px;height:16px;border-radius:50%;background:transparent;border:1px solid #00c49a90;color:#00c49a;font-size:9px;font-style:italic;font-family:Georgia,serif;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0.7;transition:opacity 0.15s;}
+.detail-btn:hover{opacity:1;}
+/* ── Zoom controls ── */
+#zoom-hud{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:4px;z-index:20;}
+.zoom-hud-btn{width:28px;height:28px;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.12s;font-family:'IBM Plex Mono',monospace;}
+.zoom-hud-btn:hover{border-color:var(--border2);color:var(--text);background:var(--surface2);}
+#zoom-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-align:center;padding:3px 0;}
+/* ── Legend ── */
+#legend-wrap{position:fixed;bottom:16px;left:16px;z-index:20;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:10px 14px;background:var(--surface);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:7px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text2);font-family:'IBM Plex Mono',monospace;}
+.legend-box{width:18px;height:12px;border-radius:2px;}
+.legend-line{width:24px;height:2px;}
+/* ── Help tip ── */
+#help-hud{position:fixed;top:60px;left:16px;background:var(--surface);border:1px solid var(--border);backdrop-filter:blur(8px);border-radius:6px;padding:7px 11px;font-size:9.5px;color:var(--text3);z-index:20;line-height:1.75;font-family:'IBM Plex Mono',monospace;}
+#help-hud b{color:var(--text2);font-weight:500;}
 /* ── Detail panel ── */
 #detail-overlay{position:fixed;inset:0;background:#00000060;z-index:1000;display:none;backdrop-filter:blur(2px);}
 #detail-overlay.open{display:block;}
@@ -4400,23 +4580,35 @@ ${opts.showGrid ? '<div class="grid-bg"></div>' : ''}
   </div>
   <div id="dp-body"></div>
 </div>
-<div class="wrap" style="position:relative;z-index:1;">
-  <div class="header">
+<div id="export-header">
+  <div>
     <h1>${title}</h1>
-    <p>${subtitle}</p>
+    ${subtitle ? `<p>${subtitle}</p>` : ''}
   </div>
-  <div class="diagram">
-    ${svgArrows}
-    ${nodeHtml}
+</div>
+<div id="viewport">
+  <div id="canvas-root">
+    <div class="diagram">
+      ${svgArrows}
+      ${nodeHtml}
+    </div>
   </div>
-  ${opts.showLegend ? `<div class="legend">
+</div>
+<div id="zoom-hud">
+  <button class="zoom-hud-btn" onclick="zoomBy(1.2)" title="Zoom in">+</button>
+  <div id="zoom-label">100%</div>
+  <button class="zoom-hud-btn" onclick="zoomBy(1/1.2)" title="Zoom out">−</button>
+  <button class="zoom-hud-btn" onclick="resetView()" title="Fit to screen" style="font-size:11px;">⊡</button>
+</div>
+<div id="help-hud"><b>Scroll</b> to zoom · <b>Drag</b> to pan · <b>Click</b> node for detail</div>
+  ${opts.showLegend ? `<div id="legend-wrap"><div class="legend">
     <div class="legend-item"><div class="legend-box" style="background:#1a2340;border:1.5px solid #4f8ef7;"></div>Internal system</div>
     <div class="legend-item"><div class="legend-box" style="background:#231a2a;border:1.5px dashed #7c5cfc;"></div>External boundary</div>
     <div class="legend-item"><div class="legend-box" style="background:transparent;border:1.5px dashed #353c50;"></div>Label / boundary</div>
-    <div class="legend-item"><div class="legend-line" style="background:#4f8ef7;border-radius:1px;"></div>Directed flow</div>
-    <div class="legend-item"><div class="legend-line" style="background:none;border-top:2px dashed #4f8ef7;"></div>Bidirectional</div>
+    <div class="legend-item"><div class="legend-line" style="background:#4f8ef7;border-radius:1px;"></div>Connection</div>
+    <div class="legend-item"><div class="legend-line" style="background:none;border-top:2px dashed #4f8ef7;"></div>Dashed connection</div>
   </div>` : ''}
-  <footer>Generated with SIM/Builder · ${new Date().toLocaleDateString()}</footer>
+  <footer style="position:fixed;bottom:4px;right:16px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#2a2f3e;z-index:5;">Conduit v1.0 · ${new Date().toLocaleDateString()}</footer>
 </div>
 <scr\u0069pt>
 const _nodeData = ${nodeDetailJson};
@@ -4486,6 +4678,67 @@ function closeDetail() {
   document.getElementById('detail-panel').classList.remove('open');
 }
 document.addEventListener('keydown', e => { if (e.key==='Escape') closeDetail(); });
+
+// ── Pan / Zoom ──
+const _vp = document.getElementById('viewport');
+const _cr = document.getElementById('canvas-root');
+const _dW = ${W}, _dH = ${H};
+let _sc = 1, _px = 0, _py = 0;
+
+function _applyT() {
+  _cr.style.transform = 'translate(' + _px + 'px,' + _py + 'px) scale(' + _sc + ')';
+  const lbl = document.getElementById('zoom-label');
+  if (lbl) lbl.textContent = Math.round(_sc * 100) + '%';
+}
+function zoomBy(factor, cx, cy) {
+  cx = (cx !== undefined ? cx : _vp.clientWidth / 2);
+  cy = (cy !== undefined ? cy : _vp.clientHeight / 2);
+  const ns = Math.min(4, Math.max(0.1, _sc * factor));
+  _px = cx - (cx - _px) * (ns / _sc);
+  _py = cy - (cy - _py) * (ns / _sc);
+  _sc = ns;
+  _applyT();
+}
+function resetView() {
+  const vw = _vp.clientWidth, vh = _vp.clientHeight, pad = 60;
+  _sc = Math.min(1, (vw - pad * 2) / _dW, (vh - pad * 2) / _dH);
+  _px = (vw - _dW * _sc) / 2;
+  _py = (vh - _dH * _sc) / 2;
+  _applyT();
+}
+_vp.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = _vp.getBoundingClientRect();
+  zoomBy(e.deltaY < 0 ? 1.1 : 0.91, e.clientX - r.left, e.clientY - r.top);
+}, { passive: false });
+let _mp = false, _ms = {x:0,y:0}, _mps = {x:0,y:0}, _mMoved = false;
+function _startPan(e) {
+  _mp = true; _mMoved = false;
+  _ms = {x:e.clientX, y:e.clientY}; _mps = {x:_px, y:_py};
+  _vp.classList.add('panning');
+}
+_vp.addEventListener('mousedown', e => {
+  if (e.button === 1) { e.preventDefault(); _startPan(e); }
+  else if (e.button === 0) { _startPan(e); }
+});
+window.addEventListener('mousemove', e => {
+  if (!_mp) return;
+  const dx = e.clientX - _ms.x, dy = e.clientY - _ms.y;
+  if (!_mMoved && Math.sqrt(dx*dx+dy*dy) > 4) _mMoved = true;
+  if (!_mMoved) return;
+  _px = _mps.x + dx; _py = _mps.y + dy;
+  _applyT();
+});
+window.addEventListener('mouseup', e => {
+  if (!_mp) return;
+  _mp = false; _vp.classList.remove('panning');
+  // If the mouse barely moved, it was a click — let it propagate to nodes
+  // If it moved, prevent any click from firing on node children
+  if (_mMoved) { e.stopPropagation(); }
+});
+// Suppress click-on-node when drag just ended
+_vp.addEventListener('click', e => { if (_mMoved) { e.stopPropagation(); _mMoved = false; } }, true);
+window.addEventListener('load', resetView);
 <\/script>
 </body>
 </html>`;
@@ -4501,16 +4754,12 @@ function exportHTML() {
 let undoStack = [];
 let _undoDebounceTimer = null;
 
-function _commitUndo() {
-  undoStack.push(JSON.stringify(state));
-  if (undoStack.length > 60) undoStack.shift();
-  updateUndoBtn();
-}
-
 function pushUndo() {
   // Flush any pending debounced push first so we don't lose it
   if (_undoDebounceTimer) { clearTimeout(_undoDebounceTimer); _undoDebounceTimer = null; }
-  _commitUndo();
+  undoStack.push(JSON.stringify(state));
+  if (undoStack.length > 60) undoStack.shift();
+  updateUndoBtn();
 }
 
 // Debounced variant for high-frequency edits (typing, sliders, colour pickers)
@@ -4519,7 +4768,9 @@ function pushUndoDebounced() {
   if (_undoDebounceTimer) clearTimeout(_undoDebounceTimer);
   _undoDebounceTimer = setTimeout(() => {
     _undoDebounceTimer = null;
-    _commitUndo();
+    undoStack.push(JSON.stringify(state));
+    if (undoStack.length > 60) undoStack.shift();
+    updateUndoBtn();
   }, 800);
 }
 
@@ -4615,12 +4866,12 @@ function openNodeModal(nodeId) {
   // Reset to overview tab
   switchNMTab('overview');
 
-  document.getElementById('node-modal-overlay')?.classList.add('open');
+  const _el_node_modal_overlay_add = document.getElementById('node-modal-overlay'); if (_el_node_modal_overlay_add) _el_node_modal_overlay_add.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeNodeModal() {
-  document.getElementById('node-modal-overlay')?.classList.remove('open');
+  const _el_node_modal_overlay_remove = document.getElementById('node-modal-overlay'); if (_el_node_modal_overlay_remove) _el_node_modal_overlay_remove.classList.remove('open');
   document.body.style.overflow = '';
   activeNodeModalId = null;
   // Re-render node in case functions were renamed
@@ -4657,7 +4908,7 @@ function buildNMOverview(n, panel) {
   const outgoing = arrows.filter(a => a.from === n.id);
   const incoming = arrows.filter(a => a.to === n.id);
   const bidir = arrows.filter(a => a.direction === 'bidirectional' && (a.from === n.id || a.to === n.id));
-  const fnCount = (n.functions || []).filter(f => _fnName(f).trim()).length;
+  const fnCount = (n.functions || []).filter(f => (f.name||f||'').trim()).length;
 
   panel.innerHTML = '';
 
@@ -4975,7 +5226,7 @@ document.getElementById('node-modal-overlay').addEventListener('click', e => {
 });
 // Close on Escape
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('node-modal-overlay')?.classList.contains('open')) {
+  const _nmOverlay = document.getElementById('node-modal-overlay'); if (e.key === 'Escape' && _nmOverlay && _nmOverlay.classList.contains('open')) {
     closeNodeModal();
   }
 });
@@ -5007,7 +5258,7 @@ function openFnModal(nodeId) {
   renderFnList();
   showFnDetail(null);
 
-  document.getElementById('fn-modal-overlay')?.classList.add('open');
+  const _el_fn_modal_overlay_add = document.getElementById('fn-modal-overlay'); if (_el_fn_modal_overlay_add) _el_fn_modal_overlay_add.classList.add('open');
   document.body.style.overflow = 'hidden';
 
   // If functions exist, auto-select first
@@ -5015,7 +5266,7 @@ function openFnModal(nodeId) {
 }
 
 function closeFnModal() {
-  document.getElementById('fn-modal-overlay')?.classList.remove('open');
+  const _el_fn_modal_overlay_remove = document.getElementById('fn-modal-overlay'); if (_el_fn_modal_overlay_remove) _el_fn_modal_overlay_remove.classList.remove('open');
   document.body.style.overflow = '';
   fnModalNodeId = null;
   activeFnIdx = null;
@@ -5134,6 +5385,7 @@ function buildFnListItem(fn, i, n) {
 function renderFnList() {
   const n = state.nodes.find(x => x.id === fnModalNodeId);
   if (!n) return;
+  updateStatusBar();
   const container = document.getElementById('fn-list-items');
   container.innerHTML = '';
 
@@ -5202,6 +5454,7 @@ function showFnDetail(fn, idx) {
       fn[key] = ctrl.value;
       saveToLocalStorage();
       if (key === 'name') {
+        updateStatusBar();
         const listItems = document.querySelectorAll('.fn-list-item');
         if (listItems[idx]) {
           const nameEl = listItems[idx].querySelector('.fn-list-name');
@@ -5233,6 +5486,10 @@ function showFnDetail(fn, idx) {
     const tagList = document.createElement('div');
     tagList.className = 'io-tag-list';
 
+    // Ensure hidden arrays exist
+    const hidKey = key === 'inputs' ? 'hiddenInputs' : 'hiddenOutputs';
+    if (!Array.isArray(fn[hidKey])) fn[hidKey] = [];
+
     function rebuildTags() {
       tagList.innerHTML = '';
       if (fn[key].length === 0) {
@@ -5242,10 +5499,28 @@ function showFnDetail(fn, idx) {
         tagList.appendChild(empty);
       } else {
         fn[key].forEach((val, ti) => {
+          const isHidden = fn[hidKey].includes(ti);
           const tag = document.createElement('div');
-          tag.className = 'io-tag ' + (key === 'inputs' ? 'input-tag' : 'output-tag');
+          tag.className = 'io-tag ' + (key === 'inputs' ? 'input-tag' : 'output-tag') + (isHidden ? ' io-tag-hidden' : '');
           const span = document.createElement('span');
           span.textContent = val;
+          // Visibility toggle
+          const vis = document.createElement('button');
+          vis.className = 'io-tag-vis';
+          vis.title = isHidden ? 'Show on canvas' : 'Hide from canvas';
+          vis.innerHTML = isHidden ? '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><ellipse cx="6" cy="6" rx="5" ry="3.2" stroke="currentColor" stroke-width="1.2" opacity="0.5"/><line x1="2" y1="2" x2="10" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' : '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><ellipse cx="6" cy="6" rx="5" ry="3.2" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg>';
+          vis.style.cssText = 'flex-shrink:0;display:inline-flex;align-items:center;background:none;border:none;cursor:pointer;padding:0 3px 0 0;opacity:' + (isHidden ? '0.35' : '0.75') + ';color:inherit;transition:opacity 0.12s;';
+          vis.addEventListener('click', e => {
+            e.stopPropagation();
+            pushUndo();
+            const idx = fn[hidKey].indexOf(ti);
+            if (idx === -1) fn[hidKey].push(ti);
+            else fn[hidKey].splice(idx, 1);
+            rebuildTags();
+            renderNodes();
+            updateStatusBar();
+            saveToLocalStorage();
+          });
           const rm = document.createElement('button');
           rm.className = 'io-tag-remove';
           rm.innerHTML = '×';
@@ -5254,9 +5529,13 @@ function showFnDetail(fn, idx) {
             e.stopPropagation();
             pushUndo();
             fn[key].splice(ti, 1);
+            // Fix up hidden indices after removal
+            fn[hidKey] = fn[hidKey].filter(i => i !== ti).map(i => i > ti ? i - 1 : i);
             rebuildTags();
+            renderNodes();
             triggerFnAutoSave();
           });
+          tag.appendChild(vis);
           tag.appendChild(span);
           tag.appendChild(rm);
           tagList.appendChild(tag);
@@ -5339,9 +5618,16 @@ function showFnDetail(fn, idx) {
       }
     }
     triggerFnAutoSave();
-    // Re-render canvas node
+    updateStatusBar();
+    saveToLocalStorage();
+    // Re-render canvas node then re-draw arrows after layout settles
     const n = state.nodes.find(x => x.id === fnModalNodeId);
-    if (n) { const el = createNodeEl(n); const old = document.getElementById('node-' + n.id); if (old) old.replaceWith(el); }
+    if (n) {
+      const el = createNodeEl(n);
+      const old = document.getElementById('node-' + n.id);
+      if (old) old.replaceWith(el);
+      requestAnimationFrame(() => renderArrows());
+    }
   });
   visToggleWrap.addEventListener('click', () => visToggle.click());
   visRow.appendChild(visToggleWrap);
@@ -5439,7 +5725,7 @@ document.getElementById('fn-modal-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('fn-modal-overlay')) closeFnModal();
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('fn-modal-overlay')?.classList.contains('open')) {
+  const _fnOverlay = document.getElementById('fn-modal-overlay'); if (e.key === 'Escape' && _fnOverlay && _fnOverlay.classList.contains('open')) {
     closeFnModal();
   }
 });
@@ -5469,7 +5755,7 @@ function openConnectModal(presetFromId) {
   renderConnNodeDisplay('to');
   renderConnPreview();
   renderConnExisting();
-  document.getElementById('conn-modal-overlay')?.classList.add('open');
+  const _el_conn_modal_overlay_add = document.getElementById('conn-modal-overlay'); if (_el_conn_modal_overlay_add) _el_conn_modal_overlay_add.classList.add('open');
   document.body.style.overflow = 'hidden';
   // If preset from, open the 'to' picker immediately
   if (presetFromId) {
@@ -5479,7 +5765,7 @@ function openConnectModal(presetFromId) {
 
 function closeConnectModal() {
   closeAllNodePickers();
-  document.getElementById('conn-modal-overlay')?.classList.remove('open');
+  const _el_conn_modal_overlay_remove = document.getElementById('conn-modal-overlay'); if (_el_conn_modal_overlay_remove) _el_conn_modal_overlay_remove.classList.remove('open');
   document.body.style.overflow = '';
   connState.activePicker = null;
 }
@@ -6039,9 +6325,6 @@ document.addEventListener('click', e => {
 // EXPORT MODAL
 // ══════════════════════════════════════════════
 const exportOpts = {
-  showFunctions: true,
-  showIO: true,
-  showSubtitle: true,
   showLegend: true,
   showGrid: true,
 };
@@ -6055,9 +6338,27 @@ function openExportModal() {
   });
   document.getElementById('export-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // Wait two animation frames so the modal is fully painted and the
-  // preview wrap has its real dimensions before we measure and scale
-  requestAnimationFrame(() => requestAnimationFrame(() => schedulePreviewUpdate()));
+
+  // Use ResizeObserver to fire only once the preview wrap has real dimensions.
+  // This is more reliable than rAF/setTimeout which can fire before flex layout settles.
+  const wrap = document.getElementById('export-preview-frame-wrap');
+  const ro = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      const h = entry.contentRect.height;
+      if (h > 10) {
+        ro.disconnect();
+        schedulePreviewUpdate();
+        return;
+      }
+    }
+  });
+  ro.observe(wrap);
+
+  // Fallback: if ResizeObserver never fires (e.g. wrap already has size), use rAF
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    if (w > 10 && h > 10) { ro.disconnect(); schedulePreviewUpdate(); }
+  }));
 }
 
 function closeExportModal() {
@@ -6121,7 +6422,7 @@ function downloadExport() {
   const blob = new Blob([html], {type: 'text/html'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = (title || 'system-map').replace(/\s+/g, '-').toLowerCase() + '.html';
+  link.download = (title || 'conduit-diagram').replace(/\s+/g, '-').toLowerCase() + '.html';
   link.click();
   closeExportModal();
 }
@@ -6395,7 +6696,7 @@ function bootApp() {
       init();
     }
   } catch(e) {
-    console.error('SIM/Builder boot error:', e);
+    console.error('Conduit boot error:', e);
     try { init(); } catch(e2) {}
   }
   restoreSectionState();
