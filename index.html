@@ -548,6 +548,19 @@
   }
   #help-tip b { color: var(--text2); font-weight: 500; }
 
+
+  /* Line style toggle buttons */
+  .line-style-row { display: flex; gap: 4px; margin-bottom: 10px; }
+  .line-style-btn {
+    flex: 1; padding: 5px 4px; border-radius: 5px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text2); font-size: 13px; cursor: pointer;
+    transition: all 0.12s; text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .line-style-btn:hover { border-color: var(--border2); color: var(--text); }
+  .line-style-btn.active { border-color: var(--accent3); color: var(--accent3); background: #001a14; }
+
   /* Arrow direction toggle */
   .dir-toggle-row { display: flex; gap: 4px; margin-bottom: 10px; }
   .dir-btn {
@@ -1323,6 +1336,7 @@
   }
   .conn-node-opt-badge.internal { background: #141c30; color: var(--accent); border: 1px solid #2d4a8a; }
   .conn-node-opt-badge.external { background: #1c1428; color: var(--accent2); border: 1px dashed #5a3f9a; }
+  .conn-node-opt-badge.boundary { background: transparent; color: var(--text3); border: 1px dashed var(--border2); }
   .conn-node-opt-text { flex: 1; min-width: 0; overflow: hidden; }
   .conn-node-opt-name { font-size: 12px; color: var(--text); font-weight: 500;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2529,15 +2543,14 @@ function createNodeEl(n) {
     div.appendChild(rh);
   }
 
-  // Connection points
-  if (n.type !== 'boundary') {
+  // Connection points — all node types including boundary
+  {
     ['n','s','e','w'].forEach(pos => {
       const cp = document.createElement('div');
       cp.className = 'conn-point';
       cp.dataset.pos = pos;
       cp.addEventListener('mousedown', e => {
         e.stopPropagation();
-        // If this port is the endpoint of the selected arrow, drag that endpoint
         if (selectedArrow && cp.classList.contains('arrow-endpoint-port')) {
           startEndpointDrag(selectedArrow, n.id, pos, e);
         } else {
@@ -2595,6 +2608,80 @@ function getPortXY(node, pos) {
     case 'w': return {x: x,       y: y + h/2};
     default:  return {x: x + w/2, y: y + h/2};
   }
+}
+
+
+// ── Arrow path builder — curved, straight, orthogonal ──
+// Returns { d, lx, ly } where lx/ly is the label midpoint.
+// ox/oy are optional offsets applied to all coords (used by export to subtract minX/minY).
+function buildArrowPath(p1, p2, fromPos, toPos, bend, lineStyle, ox, oy) {
+  ox = ox || 0; oy = oy || 0;
+  const x1 = p1.x - ox, y1 = p1.y - oy;
+  const x2 = p2.x - ox, y2 = p2.y - oy;
+  const style = lineStyle || 'curved';
+  const offs = { n:{x:0,y:-1}, s:{x:0,y:1}, e:{x:1,y:0}, w:{x:-1,y:0} };
+
+  if (style === 'straight') {
+    return {
+      d:  `M${x1},${y1} L${x2},${y2}`,
+      lx: (x1 + x2) / 2,
+      ly: (y1 + y2) / 2,
+      cx1: x1, cy1: y1, cx2: x2, cy2: y2  // dummy control pts (for compat)
+    };
+  }
+
+  if (style === 'orthogonal') {
+    // Build an L/Z-shaped path that exits perpendicular to each port.
+    // orthoOffset (-1..1) shifts the position of the middle crossbar.
+    const fo  = offs[fromPos || 'e'] || {x:1, y:0};
+    const to2 = offs[toPos   || 'w'] || {x:-1, y:0};
+    const stub = 28;
+    const ex1 = x1 + fo.x * stub,  ey1 = y1 + fo.y * stub;
+    const ex2 = x2 + to2.x * stub, ey2 = y2 + to2.y * stub;
+
+    // orthoOffset shifts the crossbar: 0 = midpoint, -1 = near source, +1 = near target
+    const oo = (bend || 0) / 120; // reuse bend storage, map -120..120 → -1..1
+
+    let mx1, my1, mx2, my2;
+    if (fo.x !== 0) {
+      // horizontal exit — crossbar is vertical, shift it left/right
+      const midX = (ex1 + ex2) / 2 + oo * (ex2 - ex1) / 2;
+      mx1 = midX; my1 = ey1;
+      mx2 = midX; my2 = ey2;
+    } else {
+      // vertical exit — crossbar is horizontal, shift it up/down
+      const midY = (ey1 + ey2) / 2 + oo * (ey2 - ey1) / 2;
+      mx1 = ex1; my1 = midY;
+      mx2 = ex2; my2 = midY;
+    }
+
+    const d = `M${x1},${y1} L${ex1},${ey1} L${mx1},${my1} L${mx2},${my2} L${ex2},${ey2} L${x2},${y2}`;
+    return {
+      d,
+      lx: (mx1 + mx2) / 2,
+      ly: (my1 + my2) / 2,
+      cx1: ex1, cy1: ey1, cx2: ex2, cy2: ey2
+    };
+  }
+
+  // Default: curved bezier
+  const b = bend || 0;
+  const dist = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2);
+  const curve = Math.max(40, dist * 0.35) + b;
+  const fo  = offs[fromPos || 'e'] || {x:1,  y:0};
+  const to2 = offs[toPos   || 'w'] || {x:-1, y:0};
+  const cx1 = x1 + fo.x  * curve;
+  const cy1 = y1 + fo.y  * curve;
+  const cx2 = x2 + to2.x * curve;
+  const cy2 = y2 + to2.y * curve;
+  // Bezier midpoint
+  const t = 0.5, mt = 0.5;
+  const lx = mt*mt*mt*x1 + 3*mt*mt*t*cx1 + 3*mt*t*t*cx2 + t*t*t*x2;
+  const ly = mt*mt*mt*y1 + 3*mt*mt*t*cy1 + 3*mt*t*t*cy2 + t*t*t*y2;
+  return {
+    d: `M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`,
+    lx, ly, cx1, cy1, cx2, cy2
+  };
 }
 
 function renderArrows() {
@@ -2688,19 +2775,9 @@ function renderArrows() {
     const mFwd = makeArrowMarker('mf-' + uid, false);  // marker-end
     const mBwd = makeArrowMarker('mb-' + uid, true);   // marker-start
 
-    // Bezier control points
-    const bend = a.bend || 0;
-    const dist = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2);
-    const curve = Math.max(40, dist * 0.35) + bend;
-    const offs = {n:{x:0,y:-1}, s:{x:0,y:1}, e:{x:1,y:0}, w:{x:-1,y:0}};
-    const fo  = offs[a.fromPos || 'e'] || {x:1,  y:0};
-    const to2 = offs[a.toPos   || 'w'] || {x:-1, y:0};
-    const cx1 = p1.x + fo.x  * curve;
-    const cy1 = p1.y + fo.y  * curve;
-    const cx2 = p2.x + to2.x * curve;
-    const cy2 = p2.y + to2.y * curve;
-
-    const d = `M${p1.x},${p1.y} C${cx1},${cy1} ${cx2},${cy2} ${p2.x},${p2.y}`;
+    // Build path (curved / straight / orthogonal)
+    const { d, lx: _lx, ly: _ly, cx1, cy1, cx2, cy2 } =
+      buildArrowPath(p1, p2, a.fromPos || 'e', a.toPos || 'w', a.bend || 0, a.lineStyle || 'curved');
 
     // Wide invisible hit area — must use a real (non-transparent) stroke colour
     // because SVG pointer events don't fire on stroke="transparent" in most browsers.
@@ -2737,8 +2814,8 @@ function renderArrows() {
 
     // Label
     if (a.label) {
-      const lx = bezierPt(p1.x, cx1, cx2, p2.x, 0.5) + (a.labelOffsetX || 0);
-      const ly = bezierPt(p1.y, cy1, cy2, p2.y, 0.5) + (a.labelOffsetY || 0);
+      const lx = _lx + (a.labelOffsetX || 0);
+      const ly = _ly + (a.labelOffsetY || 0);
       const lines   = a.label.split('\n');
       const lBold   = !!a.labelBold;
       const lItalic = !!a.labelItalic;
@@ -2993,7 +3070,35 @@ function renderPropsPanel() {
 
     addPropTextInput(body, 'Label', a, 'label', () => renderArrows());
 
-    // Direction
+    // Line style
+    addPropRow(body, 'Line style', () => {
+      const row = document.createElement('div');
+      row.className = 'line-style-row';
+      const styles = [{v:'curved',l:'∿'},{v:'straight',l:'╱'},{v:'orthogonal',l:'⌐'}];
+      styles.forEach(s => {
+        const b = document.createElement('button');
+        b.className = 'line-style-btn' + ((a.lineStyle||'curved')===s.v?' active':'');
+        b.textContent = s.l; b.title = s.v.charAt(0).toUpperCase()+s.v.slice(1);
+        b.addEventListener('click', () => {
+          pushUndo(); a.lineStyle = s.v;
+          row.querySelectorAll('.line-style-btn').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+          const br = body.querySelector('.bend-row');
+          if (br) {
+            br.style.display = s.v === 'straight' ? 'none' : '';
+            const lbl = br.querySelector('.prop-label');
+            if (lbl) lbl.textContent = s.v === 'orthogonal' ? 'Crossbar position' : 'Curve / bend';
+            // Reset slider to 0 when switching styles
+            const sl = br.querySelector('input[type=range]');
+            if (sl) { sl.value = 0; a.bend = 0; }
+          }
+          renderArrows(); saveToLocalStorage();
+        });
+        row.appendChild(b);
+      });
+      return row;
+    });
+
     addPropRow(body, 'Direction', () => {
       const row = document.createElement('div');
       row.className = 'dir-toggle-row';
@@ -3020,8 +3125,12 @@ function renderPropsPanel() {
 
     // Bend
     const bendRow = document.createElement('div');
-    bendRow.className = 'prop-row';
-    const bendLbl = document.createElement('div'); bendLbl.className='prop-label'; bendLbl.textContent='Curve / bend';
+    bendRow.className = 'prop-row bend-row';
+    const _isOrth = a.lineStyle === 'orthogonal';
+    const _isStraight = a.lineStyle === 'straight';
+    bendRow.style.display = _isStraight ? 'none' : '';
+    const bendLbl = document.createElement('div'); bendLbl.className='prop-label';
+    bendLbl.textContent = _isOrth ? 'Crossbar position' : 'Curve / bend';
     bendRow.appendChild(bendLbl);
     const bendInp = document.createElement('input'); bendInp.type='range'; bendInp.className='prop-input';
     bendInp.min=-120; bendInp.max=120; bendInp.value=a.bend||0;
@@ -3746,7 +3855,7 @@ window.addEventListener('mousemove', e => {
     }
 
     state.nodes.forEach(n => {
-      if (n.id === wireSrcId || n.type === 'boundary') return;
+      if (n.id === wireSrcId) return;
       ['n','s','e','w'].forEach(pos => {
         const p = getActualPortXY(n, pos);
         const d = Math.sqrt((mx - p.x)**2 + (my - p.y)**2);
@@ -3762,7 +3871,7 @@ window.addEventListener('mousemove', e => {
     if (!snapNodeId) {
       let bestBoxDist = Infinity;
       state.nodes.forEach(n => {
-        if (n.id === wireSrcId || n.type === 'boundary') return;
+        if (n.id === wireSrcId) return;
         const el = document.getElementById('node-' + n.id);
         const actualH = el ? el.offsetHeight : n.h;
         const inBox = mx >= n.x - NODE_MARGIN && mx <= n.x + n.w + NODE_MARGIN &&
@@ -4003,16 +4112,8 @@ function buildExportHTML(opts) {
     const fn = nodes.find(x=>x.id===a.from), tn = nodes.find(x=>x.id===a.to);
     if(!fn||!tn) return;
     const p1=getPortXYE(fn,a.fromPos||'e'), p2=getPortXYE(tn,a.toPos||'w');
-    const bend=a.bend||0;
-    const dx=p2.x-p1.x,dy=p2.y-p1.y;
-    const dist=Math.sqrt(dx*dx+dy*dy);
-    const curve=Math.max(40,dist*0.35)+bend;
-    const offsets={n:{x:0,y:-1},s:{x:0,y:1},e:{x:1,y:0},w:{x:-1,y:0}};
-    const fo=offsets[a.fromPos||'e']||{x:1,y:0};
-    const to2=offsets[a.toPos||'w']||{x:-1,y:0};
-    const cx1=p1.x+fo.x*curve,cy1=p1.y+fo.y*curve;
-    const cx2=p2.x+to2.x*curve,cy2=p2.y+to2.y*curve;
-    const d2=`M${p1.x-minX},${p1.y-minY} C${cx1-minX},${cy1-minY} ${cx2-minX},${cy2-minY} ${p2.x-minX},${p2.y-minY}`;
+    const {d:d2, lx:_elx, ly:_ely, cx1, cy1, cx2, cy2} =
+      buildArrowPath(p1, p2, a.fromPos||'e', a.toPos||'w', a.bend||0, a.lineStyle||'curved', minX, minY);
     const color=a.color||'#4f8ef7';
     let mEnd='', mStart='';
     if(a.direction==='directed'){mEnd='marker-end="url(#af)"';}
@@ -4020,8 +4121,8 @@ function buildExportHTML(opts) {
     const dash=a.dash?'stroke-dasharray="6 3"':'';
     svgArrows+=`<path d="${d2}" fill="none" stroke="${color}" stroke-width="1.5" ${mEnd} ${mStart} ${dash}/>`;
     if(a.label){
-      const lx=bezierPtE(p1.x,cx1,cx2,p2.x,0.5)+(a.labelOffsetX||0)-minX;
-      const ly=bezierPtE(p1.y,cy1,cy2,p2.y,0.5)+(a.labelOffsetY||0)-minY;
+      const lx=_elx+(a.labelOffsetX||0);
+      const ly=_ely+(a.labelOffsetY||0);
       const eLines=a.label.split('\n');
       const eFontSize=11;
       const eLineH=eFontSize+4;
@@ -5279,7 +5380,7 @@ function renderInlinePickerList(side, query) {
   const list = document.getElementById('conn-' + side + '-list');
   if (!list) return;
   list.innerHTML = '';
-  const nodes = state.nodes.filter(n => n.type !== 'boundary');
+  const nodes = state.nodes; // all types including boundary
   const q = (query || '').toLowerCase();
   const filtered = nodes.filter(n => {
     if (!q) return true;
