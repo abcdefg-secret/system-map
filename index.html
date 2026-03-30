@@ -70,15 +70,7 @@
     white-space: nowrap;
     display: flex; align-items: center; gap: 6px;
   }
-  #topbar .logo::before {
-    content: '';
-    display: inline-block;
-    width: 18px; height: 18px;
-    background: var(--accent);
-    border-radius: 4px;
-    opacity: 0.9;
-    flex-shrink: 0;
-  }
+
   #topbar .logo span { color: var(--text3); font-weight: 400; }
   .tb-sep { width: 1px; height: 20px; background: #1e2333; margin: 0 6px; }
   .tb-btn {
@@ -1867,7 +1859,15 @@
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <div class="logo">SIM<span>/</span>Builder</div>
+  <div class="logo">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <rect x="1" y="6" width="5" height="8" rx="1.5" fill="#4d7ef5" opacity="0.9"/>
+      <rect x="14" y="6" width="5" height="8" rx="1.5" fill="#4d7ef5" opacity="0.5"/>
+      <path d="M6 10 L9 10 L9 13 L11 13 L11 10 L14 10" stroke="#4d7ef5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+      <circle cx="10" cy="13" r="1.2" fill="#00c49a"/>
+    </svg>
+    SIM<span>/</span>Builder
+  </div>
   <div class="tb-sep"></div>
   <input id="diagram-title-input" type="text" value="SYSTEM INTERFACE MAP" placeholder="Diagram title…">
   <input id="diagram-subtitle-input" type="text" value="Manufacturing Execution · L3 / L4" placeholder="Subtitle…">
@@ -2654,9 +2654,10 @@ function buildArrowPath(p1, p2, fromPos, toPos, bend, lineStyle, ox, oy, orthoOf
         d,
         lx: (midX + ex2) / 2, ly: sy,
         cx1: ex1, cy1: ey1, cx2: ex2, cy2: ey2,
-        // Handle positions for canvas dragging
-        hX: { x: midX,           y: (ey1 + sy) / 2, axis: 'x', seg: 'vertical'   }, // on vert col — drag L/R
-        hY: { x: (midX+ex2) / 2, y: sy,              axis: 'y', seg: 'horizontal' }, // on horiz bar — drag U/D
+        hX: { x: midX,           y: (ey1 + sy) / 2, axis: 'x', seg: 'vertical',
+              snapBase: (ex1+ex2)/2, snapTargets: [ex1, (ex1+ex2)/2, ex2] },
+        hY: { x: (midX+ex2) / 2, y: sy,              axis: 'y', seg: 'horizontal',
+              snapBase: (ey1+ey2)/2, snapTargets: [ey1, (ey1+ey2)/2, ey2] },
       };
     } else {
       // Vertical exits (n/s): Z goes down→right→down (or up→left→up)
@@ -2669,8 +2670,10 @@ function buildArrowPath(p1, p2, fromPos, toPos, bend, lineStyle, ox, oy, orthoOf
         d,
         lx: sx, ly: (midY + ey2) / 2,
         cx1: ex1, cy1: ey1, cx2: ex2, cy2: ey2,
-        hX: { x: (ex1+sx) / 2, y: midY,              axis: 'y', seg: 'horizontal' }, // on horiz bar — a.bend=midY → drag U/D
-        hY: { x: sx,            y: (midY + ey2) / 2, axis: 'x', seg: 'vertical'   }, // on vert col  — a.orthoY=sx → drag L/R
+        hX: { x: (ex1+sx) / 2, y: midY,              axis: 'y', seg: 'horizontal',
+              snapBase: (ey1+ey2)/2, snapTargets: [ey1, (ey1+ey2)/2, ey2] },
+        hY: { x: sx,            y: (midY + ey2) / 2, axis: 'x', seg: 'vertical',
+              snapBase: (ex1+ex2)/2, snapTargets: [ex1, (ex1+ex2)/2, ex2] },
       };
     }
   }
@@ -2961,10 +2964,24 @@ function renderArrows() {
           pushUndo();
           selectArrow(a.id);
         });
+        const SNAP_THRESHOLD = 12; // canvas px within which we snap
         window.addEventListener('mousemove', e2 => {
           if (!dragging) return;
           const delta = (isXDrag ? (e2.clientX - startPos) : (e2.clientY - startPos)) / scale;
-          a[prop] = startVal + delta;
+          let val = startVal + delta;
+
+          // Snap to port alignment targets if snap targets are defined on this handle
+          if (info.snapTargets && info.snapBase !== undefined) {
+            for (const target of info.snapTargets) {
+              const offset = target - info.snapBase; // what a[prop] would need to be
+              if (Math.abs(val - offset) < SNAP_THRESHOLD) {
+                val = offset;
+                break;
+              }
+            }
+          }
+
+          a[prop] = val;
           renderArrows();
           // Sync sidebar sliders
           const slA = document.getElementById('ortho-slider-bend');
@@ -3237,6 +3254,23 @@ function renderPropsPanel() {
       const labelA = isHorizExit ? 'Column X position' : 'Crossbar Y position';
       const labelB = isHorizExit ? 'Crossbar Y position' : 'Column X position';
 
+      // Reset routing button
+      const resetRouteRow = document.createElement('div');
+      resetRouteRow.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:6px;';
+      const resetRouteBtn = document.createElement('button');
+      resetRouteBtn.textContent = '↺ Reset routing';
+      resetRouteBtn.title = 'Reset connection path to default';
+      resetRouteBtn.style.cssText = 'padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:10px;';
+      resetRouteBtn.addEventListener('click', () => {
+        pushUndo(); a.bend = 0; a.orthoY = 0;
+        const slA = document.getElementById('ortho-slider-bend');
+        const slB = document.getElementById('ortho-slider-orthoY');
+        if (slA) slA.value = 0; if (slB) slB.value = 0;
+        renderArrows(); saveToLocalStorage();
+      });
+      resetRouteRow.appendChild(resetRouteBtn);
+      body.appendChild(resetRouteRow);
+
       [[labelA, 'bend', 'ortho-slider-bend'], [labelB, 'orthoY', 'ortho-slider-orthoY']].forEach(([lbl, prop, sid]) => {
         const row = document.createElement('div');
         row.className = 'prop-row';
@@ -3316,8 +3350,6 @@ function renderPropsPanel() {
     resetPosBtn.addEventListener('click', () => {
       pushUndo();
       a.labelOffsetX = 0; a.labelOffsetY = 0;
-      // Also reset orthogonal layout offsets if applicable
-      if ((a.lineStyle || 'curved') === 'orthogonal') { a.bend = 0; a.orthoY = 0; }
       renderArrows(); saveToLocalStorage();
     });
 
@@ -3381,6 +3413,7 @@ function makePortSelect(obj, key, onChange) {
 function selectNode(id) {
   selectedNode = id;
   selectedArrow = null;
+  arrowSVG.style.zIndex = '2'; // restore below nodes
   document.querySelectorAll('.node').forEach(e => e.classList.remove('selected'));
   const el = document.getElementById(`node-${id}`);
   if (el) el.classList.add('selected');
@@ -3408,6 +3441,7 @@ function selectArrow(id) {
       if (toCp) toCp.classList.add('arrow-endpoint-port');
     }
   }
+  arrowSVG.style.zIndex = '4'; // float above nodes while arrow is selected
   renderArrows();
   renderSidebar();
 }
@@ -3418,6 +3452,7 @@ function deselect(e) {
   selectedArrow = null;
   document.querySelectorAll('.node').forEach(e => { e.classList.remove('selected'); e.classList.remove('arrow-endpoint'); });
   document.querySelectorAll('.conn-point.arrow-endpoint-port').forEach(cp => cp.classList.remove('arrow-endpoint-port'));
+  arrowSVG.style.zIndex = '2'; // restore below nodes
   renderArrows();
   renderSidebar();
 }
